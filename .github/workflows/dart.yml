@@ -1,42 +1,79 @@
-# This workflow uses actions that are not certified by GitHub.
-# They are provided by a third-party and are governed by
-# separate terms of service, privacy policy, and support
-# documentation.
+# 1.
+name: Test & Build
 
-name: Dart
-
+# 2.
 on:
-  push:
-    branches: [ "main" ]
   pull_request:
-    branches: [ "main" ]
+    branches:
+      - master
+      - dev
+  push:
+    branches:
+      - master
+      - dev
 
+# 3.
 jobs:
-  build:
-    runs-on: ubuntu-latest
+  main:
+    runs-on: macos-latest
 
+    # 4.
     steps:
-      - uses: actions/checkout@v4
 
-      # Note: This workflow uses the latest stable version of the Dart SDK.
-      # You can specify other versions if desired, see documentation here:
-      # https://github.com/dart-lang/setup-dart/blob/main/README.md
-      # - uses: dart-lang/setup-dart@v1
-      - uses: dart-lang/setup-dart@9a04e6d73cca37bd455e0608d7e5092f881fd603
+      # 5.
+      - name: Clone repository
+        uses: actions/checkout@v4
 
-      - name: Install dependencies
-        run: dart pub get
+      # 6.
+      - name: Setup java
+        uses: actions/setup-java@v3
+        with:
+          distribution: 'zulu'
+          java-version: "18.x"
 
-      # Uncomment this step to verify the use of 'dart format' on each commit.
-      # - name: Verify formatting
-      #   run: dart format --output=none --set-exit-if-changed .
+      # 7.
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: 'stable'
+          flutter-version: '3.22.2'
 
-      # Consider passing '--fatal-infos' for slightly stricter analysis.
-      - name: Analyze project source
-        run: dart analyze
+      # 8.
+      - name: Get Flutter packages
+        run: |
+          flutter pub get
 
-      # Your project will need to have tests in test/ and a dependency on
-      # package:test for this step to succeed. Note that Flutter projects will
-      # want to change this to 'flutter test'.
-      - name: Run tests
-        run: dart test
+      # 9.
+      - name: Check for lints
+        run: |
+          flutter analyze
+
+      # 10.
+      - name: Run all tests
+        run: |
+          flutter test
+
+      # 11.
+      - name: Build APK
+        run: |
+          flutter build apk
+
+      # 12.
+      - name: Flutter build ipa
+        run: |
+          flutter build ipa --no-codesign
+
+      # 13.
+      - name: Compress Archives and IPAs
+        run: |
+          cd build
+          tar -czf ios_build.tar.gz ios
+
+      # 14.
+      - name: Upload Artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: Releases
+          path: |
+            build/app/outputs/flutter-apk/app-release.apk
+            build/ios_build.tar.gz
