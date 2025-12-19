@@ -1,49 +1,44 @@
+name: Flutter CI/CD
+
 on:
-  pull_request:
-    branches:
-      - main
-      - master
   push:
-    branches:
-      - main
-      - master
-      - develop
-name: "Build & Release"
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
 jobs:
   build:
-    name: Build & Release
-    runs-on: macos-latest
+    runs-on: ubuntu-latest
+
     steps:
-      - uses: actions/checkout@v3
-      - uses: actions/setup-java@v3
+      - uses: actions/checkout@v4
+
+      - name: Setup Java
+        uses: actions/setup-java@v3
         with:
           distribution: 'zulu'
-          java-version: '12'
-      - uses: subosito/flutter-action@v2
+          java-version: '17'
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
         with:
+          flutter-version: '3.35.4 ' # Uses the latest stable version
           channel: 'stable'
-          architecture: x64
 
-      - run: flutter build apk --release --split-per-abi
-      - run: |
-          flutter build ios --no-codesign
-          cd build/ios/iphoneos
-          mkdir Payload
-          cd Payload
-          ln -s ../Runner.app
-          cd ..
-          zip -r app.ipa Payload
-      - name: Push to Releases
-        uses: ncipollo/release-action@v1
+      - name: Install Dependencies
+        run: flutter pub get
+
+      - name: Analyze Code (Linting)
+        run: flutter analyze
+
+      - name: Run BLoC Unit Tests
+        run: flutter test
+
+      - name: Build APK
+        run: flutter build apk --release
+
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v4
         with:
-          artifacts: "build/app/outputs/apk/release/*,build/ios/iphoneos/app.ipa"
-          tag: v1.0.${{ github.run_number }}
-          token: ${{ secrets.TOKEN }}
-
-
-
-
-
-
-# push to master, main, develop
-# pull request on main master
+          name: release-apk
+          path: build/app/outputs/flutter-apk/app-release.apk
