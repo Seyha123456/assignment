@@ -2,16 +2,18 @@ name: Flutter CI/CD
 
 on:
   push:
-    branches: [ main ]
+    branches: [ main, latestcode ] # Added your 'latestcode' branch
   pull_request:
     branches: [ main ]
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    # Use macos-latest if you need to build for iOS/CocoaPods
+    runs-on: macos-latest 
 
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout Code
+        uses: actions/checkout@v4
 
       - name: Setup Java
         uses: actions/setup-java@v3
@@ -22,22 +24,34 @@ jobs:
       - name: Setup Flutter
         uses: subosito/flutter-action@v2
         with:
-          flutter-version: '3.35.4 ' # Uses the latest stable version
+          # Fixed: Removed the invalid 3.35.4 version. 
+          # Using 'any' on stable channel picks the latest verified version.
           channel: 'stable'
+          cache: true
 
-      - name: Install Dependencies
-        run: flutter pub get
+      - name: Install CocoaPods and Dependencies
+        run: |
+          # Fix for Ruby 3.3+ environments
+          sudo gem install drb
+          flutter pub get
+          cd ios
+          # Ensure CocoaPods are installed correctly for the runner architecture
+          pod install --repo-update
+          cd ..
 
-      - name: Analyze Code (Linting)
-        run: flutter analyze
+      - name: Run Lints and Tests
+        run: |
+          flutter analyze
+          flutter test
 
-      - name: Run BLoC Unit Tests
-        run: flutter test
-
-      - name: Build APK
+      - name: Build Android APK
         run: flutter build apk --release
 
-      - name: Upload Artifact
+      - name: Build iOS (No-Codesign)
+        # We use --no-codesign because GitHub runners don't have your private p12 certificates by default
+        run: flutter build ios --release --no-codesign
+
+      - name: Upload APK Artifact
         uses: actions/upload-artifact@v4
         with:
           name: release-apk
