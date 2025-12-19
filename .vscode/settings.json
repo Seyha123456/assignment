@@ -1,3 +1,28 @@
 {
-    "dart.flutterSdkPath": "/Users/seyha/Documents/flutter_projects/e_pos_gpas_mobile/.fvm/versions/3.29.3"
+  "dart.flutterSdkPath": "/Users/seyha/Documents/flutter_projects/e_pos_gpas_mobile/.fvm/versions/3.29.3",
+  "[dart]": {
+    "editor.formatOnSave": true,
+    "editor.formatOnType": true,
+    "editor.rulers": [80],
+    "editor.codeActionsOnSave": {
+      "source.fixAll": "explicit"
+    },
+    "editor.selectionHighlight": false,
+    "editor.suggest.snippetsPreventQuickSuggestions": false,
+    "editor.suggestSelection": "first",
+    "editor.tabCompletion": "onlySnippets",
+    "editor.wordBasedSuggestions": "off"
+  },
+  "files.autoSave": "onFocusChange",
+  "dart.debugExternalPackageLibraries": true,
+  "dart.debugSdkLibraries": false,
+  "explorer.confirmDelete": false,
+  "editor.codeActionsOnSave": {},
+  "dart.showInspectorNotificationsForWidgetErrors": false,
+  "dart.openDevTools": "never",
+  "editor.defaultFormatter": "esbenp.prettier-vscode",
+  "editor.formatOnSave": true,
+  "workbench.editor.enablePreview": false,
+  "dart.useLsp": false,
+  "dart.autoImportCompletions": false
 }
